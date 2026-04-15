@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Misiones">
+<meta name="theme-color" content="#E8A4C9">
+<title>Misiones 💕</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html { height:100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  background: #fff5fb;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0; left: 0;
+}
+
+/* Safe areas for iPhone notch */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ===== HEADER ===== */
+.header {
+  background: rgba(255,245,251,0.95);
+  padding-top: calc(var(--safe-top) + 12px);
+  padding-bottom: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(232,164,201,0.2);
+  flex-shrink: 0;
+}
+.header h1 { font-size: 19px; font-weight: 800; color: #2d1b2e; }
+.header .sub { font-size: 12px; color: #9c7ba8; margin-top: 2px; }
+.bell {
+  width: 40px; height: 40px; background: white; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 2px 10px rgba(180,80,130,0.12);
+  cursor: pointer; position: relative; flex-shrink: 0;
+}
+.bell-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 9px; height: 9px; background: #FF6B6B;
+  border-radius: 50%; border: 2px solid #fff5fb;
+}
+
+/* ===== PUSH NOTIFICATION ===== */
+.push {
+  position: fixed;
+  top: calc(var(--safe-top) + 8px);
+  left: 10px; right: 10px;
+  background: rgba(255,255,255,0.97);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(-200px);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.push.show { transform: translateY(0); }
+.push-ico { width:38px; height:38px; background:linear-gradient(135deg,#E8A4C9,#B5A4E8); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+.push-app { font-size:10px; color:#9c7ba8; font-weight:700; }
+.push-title { font-size:13px; font-weight:700; color:#1a1a2e; }
+.push-body { font-size:12px; color:#6b5b7a; }
+.push-x { margin-left:auto; color:#ccc; font-size:20px; cursor:pointer; line-height:1; flex-shrink:0; }
+
+/* ===== BODY ===== */
+.app-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: none;
+  background: #fff5fb;
+  padding-bottom: calc(var(--safe-bottom) + 75px);
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: block; }
+
+/* ===== TAB BAR ===== */
+.tabs {
+  flex-shrink: 0;
+  background: rgba(255,245,251,0.96);
+  border-top: 1px solid rgba(232,164,201,0.2);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 8px;
+  padding-bottom: calc(var(--safe-bottom) + 4px);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; cursor: pointer; padding: 0 8px;
+  opacity: 0.4; transition: opacity 0.2s;
+  -webkit-user-select: none; user-select: none;
+  position: relative;
+}
+.tab.on { opacity: 1; }
+.tab-ico { font-size: 23px; }
+.tab-lbl { font-size: 10px; font-weight: 600; color: #b04080; }
+.tab.on .tab-lbl { font-weight: 800; }
+.tab-badge {
+  position: absolute; top: -2px; right: 2px;
+  background: #FF6B6B; color: white;
+  font-size: 9px; font-weight: 800;
+  min-width: 15px; height: 15px; border-radius: 8px;
+  display: none; align-items: center; justify-content: center;
+  padding: 0 3px; border: 2px solid #fff5fb;
+}
+.tab-badge.show { display: flex; }
+
+/* ===== SHARED STYLES ===== */
+.page-head { padding: 16px 18px 0; }
+.page-title { font-size: 26px; font-weight: 800; color: #2d1b2e; letter-spacing: -0.3px; }
+.page-sub { font-size: 13px; color: #9c7ba8; margin-top: 3px; }
+
+.sec-lbl {
+  font-size: 11px; font-weight: 700; color: #b08ab8;
+  text-transform: uppercase; letter-spacing: 0.7px;
+  padding: 12px 18px 6px;
+}
+
+.pills {
+  display: flex; gap: 7px; padding: 10px 18px;
+  overflow-x: auto;
+}
+.pills::-webkit-scrollbar { display: none; }
+.pill {
+  padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  border: 1.5px solid #e8d5f0; background: white; color: #9c7ba8;
+  transition: all 0.15s;
+}
+.pill.on {
+  background: linear-gradient(135deg,#E8A4C9,#B5A4E8);
+  color: white; border-color: transparent;
+}
+
+/* ===== STAT ROW ===== */
+.stat-row { display: flex; gap: 9px; padding: 12px 14px; }
+.stat { flex: 1; background: white; border-radius: 17px; padding: 13px 11px 10px; box-shadow: 0 2px 10px rgba(180,80,130,0.07); }
+.stat.red { background: linear-gradient(135deg,#FF6B6B,#FF8E8E); }
+.s-i { font-size: 19px; }
+.s-n { font-size: 28px; font-weight: 800; color: #2d1b2e; line-height: 1.1; }
+.stat.red .s-n { color: white; }
+.s-l { font-size: 10px; color: #b08ab8; margin-top: 1px; }
+.stat.red .s-l { color: rgba(255,255,255,0.85); }
+
+/* ===== STREAK ===== */
+.streak {
+  margin: 0 14px 8px;
+  background: linear-gradient(135deg,#fff3cd,#ffe8a3);
+  border-radius: 15px; padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.streak-ico { font-size: 22px; }
+.streak-t { font-size: 13px; font-weight: 800; color: #7a4500; }
+.streak-s { font-size: 11px; color: #a06020; margin-top: 1px; }
+
+/* ===== PET PREVIEW ===== */
+.pet-prev {
+  margin: 0 14px 8px;
+  background: linear-gradient(135deg,#c4a4e8,#e8a4c9);
+  border-radius: 19px; padding: 13px 15px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; box-shadow: 0 4px 18px rgba(181,164,232,0.33);
+  transition: transform 0.15s;
+}
+.pet-prev:active { transform: scale(0.98); }
+.pp-av { width: 54px; height: 54px; background: rgba(255,255,255,0.28); border-radius: 27px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+.pp-name { font-size: 14px; font-weight: 700; color: white; }
+.pp-msg { font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 2px; line-height: 1.35; }
+.pp-bar { height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; margin-top: 7px; overflow: hidden; }
+.pp-fill { height: 100%; background: white; border-radius: 3px; transition: width 0.5s; }
+
+/* ===== MISSION CARD ===== */
+.mc {
+  margin: 0 14px 8px;
+  background: white; border-radius: 15px;
+  padding: 12px 13px 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 2px 9px rgba(180,80,130,0.07);
+  position: relative; overflow: hidden;
+}
+.mc::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 4px;
+  border-radius: 15px 0 0 15px;
+}
+.mc.u::before { background: #FF6B6B; }
+.mc.i::before { background: #FFA94D; }
+.mc.n::before { background: #FFCC44; }
+.mc.l::before { background: #51CF66; }
+.mc.done { opacity: 0.5; }
+.mc-dot { width: 34px; height: 34px; border-radius: 17px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.mc.u .mc-dot { background: #FFF0F0; }
+.mc.i .mc-dot { background: #FFF5EA; }
+.mc.n .mc-dot { background: #FFFCE0; }
+.mc.l .mc-dot { background: #EAFFF0; }
+.mc-info { flex: 1; min-width: 0; }
+.mc-title { font-size: 14px; font-weight: 600; color: #2d1b2e; }
+.mc-title.done { text-decoration: line-through; color: #b0a0b8; }
+.mc-meta { font-size: 11px; color: #9c7ba8; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mc-badge { background: #F0E8FF; color: #7C3AED; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.mc-badge.sh { background: #FFE8F4; color: #C0396A; }
+.mc-ck {
+  width: 24px; height: 24px; border-radius: 12px;
+  border: 2px solid #ddc5e8; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0; font-size: 12px;
+}
+.mc-ck.on { background: #E8A4C9; border-color: #E8A4C9; color: white; }
+.mc-del {
+  width: 24px; height: 24px; border-radius: 12px;
+  background: #FFE8F4; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #FF6B6B; flex-shrink: 0;
+}
+
+/* ===== ADD BTN ===== */
+.add-btn {
+  width: 42px; height: 42px; border-radius: 21px;
+  background: linear-gradient(135deg,#E8A4C9,#B5A4E8);
+  border: none; font-size: 24px; color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(232,164,201,0.43); flex-shrink: 0;
+}
+.ms-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 18px 0; }
+
+/* ===== MODAL ===== */
+.modal-bg {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(40,0,60,0.4); z-index: 1000;
+  display: none; align-items: flex-end;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: #fff5fb; border-radius: 24px 24px 0 0;
+  padding: 0 18px calc(var(--safe-bottom) + 20px);
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  animation: up 0.3s cubic-bezier(0.34,1.2,0.64,1);
+}
+.modal::-webkit-scrollbar { display: none; }
+@keyframes up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width: 38px; height: 4px; background: #e0ccea; border-radius: 2px; margin: 12px auto 16px; }
+.modal-title { font-size: 20px; font-weight: 800; color: #2d1b2e; margin-bottom: 16px; }
+.f-g { margin-bottom: 14px; }
+.f-l { font-size: 12px; font-weight: 700; color: #9c7ba8; margin-bottom: 6px; display: block; }
+.f-i {
+  width: 100%; background: white; border: 1.8px solid #e8d5f0;
+  border-radius: 12px; padding: 11px 13px; font-size: 15px; color: #2d1b2e;
+  outline: none; font-family: inherit; -webkit-appearance: none;
+}
+.f-i:focus { border-color: #E8A4C9; }
+.f-i.err { border-color: #FF6B6B; }
+textarea.f-i { resize: none; }
+.urg-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.urg-o { padding: 10px 11px; border-radius: 11px; cursor: pointer; display: flex; align-items: center; gap: 7px; border: 2px solid transparent; font-size: 13px; font-weight: 600; }
+.urg-o.u { background: #FFF0F0; color: #FF6B6B; }
+.urg-o.i { background: #FFF5EA; color: #F08030; }
+.urg-o.n { background: #FFFCE0; color: #C09000; }
+.urg-o.l { background: #EAFFF0; color: #2A7D40; }
+.urg-o.on { border-color: currentColor; }
+.whom-r { display: flex; gap: 7px; }
+.whom-o { flex: 1; padding: 10px 6px; background: white; border-radius: 11px; border: 2px solid #e8d5f0; cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; color: #9c7ba8; }
+.whom-o.on { background: linear-gradient(135deg,#E8A4C9,#B5A4E8); color: white; border-color: transparent; }
+.submit { width: 100%; padding: 15px; border: none; border-radius: 15px; background: linear-gradient(135deg,#E8A4C9,#B5A4E8); color: white; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+.cancel-b { width: 100%; padding: 12px; background: transparent; border: none; color: #9c7ba8; font-size: 14px; cursor: pointer; }
+
+/* ===== CALENDAR ===== */
+.cal-wrap { margin: 6px 14px 0; background: white; border-radius: 19px; padding: 15px 13px; box-shadow: 0 2px 14px rgba(180,80,130,0.08); }
+.cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.cal-m { font-size: 17px; font-weight: 800; color: #2d1b2e; }
+.cal-b { width: 30px; height: 30px; border-radius: 15px; background: #f5e8ff; border: none; cursor: pointer; font-size: 15px; color: #9c7ba8; }
+.cal-wd-row { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 6px; }
+.cal-wd { text-align: center; font-size: 10px; font-weight: 700; color: #c0a0cc; }
+.cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-d {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #2d1b2e; border-radius: 50%; cursor: pointer; position: relative;
+}
+.cal-d.other { color: #d8b8e8; }
+.cal-d.today { background: linear-gradient(135deg,#E8A4C9,#B5A4E8); color: white; font-weight: 800; }
+.cal-d.ev::after { content:''; position:absolute; bottom:2px; width:4px; height:4px; border-radius:50%; background:#E8A4C9; }
+.cal-d.today.ev::after { background: rgba(255,255,255,0.8); }
+.cal-d.sel:not(.today) { background: #f0e0ff; color: #7c3aed; font-weight: 700; }
+
+.day-evs { margin: 14px 14px 0; }
+.day-evs-title { font-size: 15px; font-weight: 800; color: #2d1b2e; margin-bottom: 9px; }
+.day-ev { display:flex; align-items:center; gap:11px; background:white; border-radius:13px; padding:10px 13px; margin-bottom:7px; box-shadow:0 2px 7px rgba(180,80,130,0.06); }
+.ev-t { font-size:11px; color:#9c7ba8; font-weight:700; min-width:38px; }
+.ev-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.ev-txt { font-size:13px; color:#2d1b2e; }
+.ev-who { font-size:10px; color:#b08ab8; margin-left:auto; }
+
+/* ===== PET ===== */
+.pet-main {
+  margin: 12px 14px 0;
+  background: linear-gradient(145deg,#ead8ff,#ffcce8);
+  border-radius: 22px; padding: 22px 16px 18px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.pet-sp { position:absolute; animation: sp 3s ease-in-out infinite; }
+.pet-sp:nth-child(1){top:10px;left:16px;font-size:19px;}
+.pet-sp:nth-child(2){top:14px;right:18px;font-size:16px;animation-delay:.8s;}
+.pet-sp:nth-child(3){bottom:11px;left:22px;font-size:14px;animation-delay:.4s;}
+@keyframes sp { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-7px) rotate(5deg)} }
+.pet-ava { font-size:84px; display:inline-block; animation:pb 2.5s ease-in-out infinite; cursor:pointer; }
+@keyframes pb { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-9px) rotate(3deg)} }
+.pet-n { font-size:22px; font-weight:900; color:#5b2d7a; }
+.pet-mood { font-size:13px; color:#8540b0; margin:4px 0 12px; }
+.pet-bar-o { background:rgba(255,255,255,0.4); border-radius:8px; height:9px; overflow:hidden; margin:0 12px; }
+.pet-bar-i { height:100%; border-radius:8px; background:linear-gradient(90deg,#E8A4C9,#B5A4E8); transition:width 0.6s; }
+.pet-pct { font-size:11px; color:#8540b0; margin-top:5px; font-weight:600; }
+
+.pet-bub { margin:12px 14px; background:white; border-radius:17px; border-bottom-left-radius:4px; padding:13px 15px; box-shadow:0 2px 11px rgba(180,80,130,0.09); }
+.pet-msg-txt { font-size:14px; color:#2d1b2e; line-height:1.55; transition:opacity 0.3s; }
+.pet-msg-time { font-size:11px; color:#b08ab8; margin-top:5px; }
+
+.pet-acts { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 14px 12px; }
+.pet-act { background:white; border-radius:15px; padding:14px 6px 11px; text-align:center; cursor:pointer; box-shadow:0 2px 9px rgba(180,80,130,0.08); border:none; transition:transform 0.15s; }
+.pet-act:active { transform:scale(0.92); }
+.pa-i { font-size:28px; }
+.pa-l { font-size:10px; font-weight:700; color:#9c7ba8; margin-top:5px; }
+
+.pet-h { margin:0 14px 8px; background:white; border-radius:13px; padding:11px 13px; box-shadow:0 2px 7px rgba(180,80,130,0.06); display:flex; align-items:flex-start; gap:9px; }
+.ph-w { font-size:22px; }
+.ph-n { font-size:10px; font-weight:800; color:#E8A4C9; }
+.ph-a { font-size:13px; color:#2d1b2e; margin-top:1px; }
+.ph-t { font-size:10px; color:#b08ab8; margin-top:2px; }
+
+/* ===== PLANS ===== */
+.feat {
+  margin: 8px 14px 12px;
+  background: linear-gradient(135deg,#6366f1,#a855f7);
+  border-radius: 19px; padding: 17px; position:relative; overflow:hidden;
+}
+.feat::after { content:''; position:absolute; right:-20px; top:-20px; width:110px; height:110px; background:rgba(255,255,255,0.09); border-radius:55px; }
+.feat-badge { background:rgba(255,255,255,0.22); color:white; font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; display:inline-block; margin-bottom:8px; }
+.feat-title { font-size:19px; font-weight:900; color:white; }
+.feat-desc { font-size:12px; color:rgba(255,255,255,0.83); margin-top:5px; line-height:1.45; }
+.feat-acts { display:flex; gap:7px; margin-top:11px; }
+.feat-btn { padding:7px 14px; border-radius:20px; font-size:12px; font-weight:800; cursor:pointer; border:none; }
+.feat-btn.p { background:white; color:#6366f1; }
+.feat-btn.s { background:rgba(255,255,255,0.2); color:white; }
+
+.plan-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 14px; }
+.plan-card { background:white; border-radius:17px; overflow:hidden; box-shadow:0 2px 11px rgba(180,80,130,0.08); }
+.plan-img { height:80px; display:flex; align-items:center; justify-content:center; font-size:42px; }
+.plan-body { padding:9px 11px 12px; }
+.plan-title { font-size:13px; font-weight:800; color:#2d1b2e; }
+.plan-meta { font-size:11px; color:#9c7ba8; margin-top:2px; }
+.plan-btns { display:flex; gap:6px; margin-top:8px; }
+.plan-btn { flex:1; padding:6px 4px; border-radius:9px; border:none; cursor:pointer; font-size:12px; font-weight:700; }
+.plan-btn.lk { background:#FFE8F4; color:#E8A4C9; }
+.plan-btn.sv { background:#EDE8FF; color:#B5A4E8; }
+.plan-btn.lk.on { background:#FF6B6B; color:white; }
+.plan-btn.sv.on { background:#B5A4E8; color:white; font-size:10px; }
+
+/* ===== SETTINGS ===== */
+.set-card { margin:0 14px 10px; background:white; border-radius:18px; padding:16px; box-shadow:0 2px 10px rgba(180,80,130,0.08); }
+.set-card h3 { font-size:15px; font-weight:800; color:#2d1b2e; margin-bottom:4px; }
+.set-card p { font-size:12.5px; color:#9c7ba8; line-height:1.5; }
+.info-card { margin:0 14px 10px; background:linear-gradient(135deg,#E8F8FF,#E8F0FF); border-radius:16px; padding:13px 15px; }
+.info-card h4 { font-size:13px; font-weight:800; color:#1a4080; margin-bottom:5px; }
+.info-card p { font-size:12px; color:#2a5090; line-height:1.5; }
+
+/* ===== EMPTY STATE ===== */
+.empty { text-align:center; padding:36px 24px; }
+.empty-i { font-size:44px; margin-bottom:10px; }
+.empty h3 { font-size:17px; font-weight:700; color:#2d1b2e; }
+.empty p { font-size:13px; color:#9c7ba8; margin-top:5px; line-height:1.5; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 85px);
+  left: 50%; transform: translateX(-50%) translateY(10px);
+  background: rgba(40,0,60,0.88); color: white;
+  padding: 8px 18px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  opacity: 0; transition: all 0.3s;
+  pointer-events: none; white-space: nowrap; z-index: 5000;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+
+<!-- Push Notification -->
+<div class="push" id="push">
+  <div class="push-ico" id="push-ico">🎯</div>
+  <div style="flex:1;min-width:0">
+    <div class="push-app">Misiones 💕</div>
+    <div class="push-title" id="push-title">Notificación</div>
+    <div class="push-body" id="push-body">Mensaje</div>
+  </div>
+  <span class="push-x" onclick="closePush()">×</span>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1 id="hTitle">Hola, Claudia 👋</h1>
+    <div class="sub" id="hDate"></div>
+  </div>
+  <div class="bell" onclick="bellTap()">
+    🔔
+    <div class="bell-dot" id="bellDot" style="display:none"></div>
+  </div>
+</div>
+
+<!-- App Body -->
+<div class="app-body">
+
+  <!-- HOME -->
+  <div class="screen active" id="sc-home">
+    <div class="stat-row">
+      <div class="stat red"><div class="s-i">🔥</div><div class="s-n" id="sUrg">0</div><div class="s-l">Urgentes</div></div>
+      <div class="stat"><div class="s-i">📋</div><div class="s-n" id="sTot">0</div><div class="s-l">Hoy</div></div>
+      <div class="stat"><div class="s-i">✅</div><div class="s-n" id="sDone">0</div><div class="s-l">Hechas</div></div>
+    </div>
+    <div class="streak">
+      <div class="streak-ico">🔥</div>
+      <div>
+        <div class="streak-t" id="streakTxt">¡Completad misiones!</div>
+        <div class="streak-s">Sois las mejores dueñas de <span id="petInStreak">Mochi</span> 💕</div>
+      </div>
+    </div>
+    <div class="pet-prev" onclick="goTab('mascota')">
+      <div class="pp-av" id="ppAva">🐱</div>
+      <div style="flex:1">
+        <div class="pp-name" id="ppName">Mochi está feliz 😊</div>
+        <div class="pp-msg" id="ppMsg">"¡Hola! ¡Acordaos de cuidarme!"</div>
+        <div class="pp-bar"><div class="pp-fill" id="ppFill" style="width:72%"></div></div>
+      </div>
+      <span style="color:white;font-size:18px;flex-shrink:0">›</span>
+    </div>
+    <div class="sec-lbl">🌅 Misiones de hoy</div>
+    <div id="homeList"></div>
+    <div style="text-align:center;padding:12px 0 4px;color:#E8A4C9;font-size:13px;font-weight:700;cursor:pointer" onclick="goTab('misiones')">Ver todas →</div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div class="screen" id="sc-calendario">
+    <div class="page-head">
+      <div class="page-title">Calendario 📅</div>
+    </div>
+    <div class="pills">
+      <div class="pill on" onclick="selPill(this)">📱 El mío</div>
+      <div class="pill" onclick="selPill(this)">💕 Juntas</div>
+      <div class="pill" onclick="selPill(this)">👩‍❤️‍👩 De <span id="partnerCal">Ana</span></div>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cal-b" onclick="chMonth(-1)">‹</button>
+        <span class="cal-m" id="calLabel">Cargando...</span>
+        <button class="cal-b" onclick="chMonth(1)">›</button>
+      </div>
+      <div class="cal-wd-row">
+        <div class="cal-wd">L</div><div class="cal-wd">M</div><div class="cal-wd">X</div>
+        <div class="cal-wd">J</div><div class="cal-wd">V</div><div class="cal-wd">S</div><div class="cal-wd">D</div>
+      </div>
+      <div class="cal-days" id="calGrid"></div>
+    </div>
+    <div class="day-evs">
+      <div class="day-evs-title" id="dayTitle">Eventos de hoy</div>
+      <div id="dayList"></div>
+    </div>
+  </div>
+
+  <!-- MISIONES -->
+  <div class="screen" id="sc-misiones">
+    <div class="ms-head">
+      <div>
+        <div class="page-title">Misiones 🎯</div>
+        <div class="page-sub" id="msSub">0 pendientes</div>
+      </div>
+      <button class="add-btn" onclick="openModal()">+</button>
+    </div>
+    <div class="pills" id="filterPills">
+      <div class="pill on" onclick="setFilter('all',this)">Todas</div>
+      <div class="pill" onclick="setFilter('u',this)">🔴 Urgente</div>
+      <div class="pill" onclick="setFilter('i',this)">🟠 Importante</div>
+      <div class="pill" onclick="setFilter('n',this)">🟡 Normal</div>
+      <div class="pill" onclick="setFilter('l',this)">🟢 Sin prisa</div>
+    </div>
+    <div id="mList"></div>
+
+    <!-- Modal -->
+    <div class="modal-bg" id="mModal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Nueva Misión ✨</div>
+        <div class="f-g">
+          <label class="f-l">¿Qué hay que hacer?</label>
+          <input class="f-i" id="mTitle" placeholder="Ej: Comprar flores...">
+        </div>
+        <div class="f-g">
+          <label class="f-l">Descripción (opcional)</label>
+          <textarea class="f-i" id="mDesc" rows="2" placeholder="Más detalles..."></textarea>
+        </div>
+        <div class="f-g">
+          <label class="f-l">Fecha límite</label>
+          <input class="f-i" type="datetime-local" id="mDate">
+        </div>
+        <div class="f-g">
+          <label class="f-l">Urgencia</label>
+          <div class="urg-g">
+            <div class="urg-o u on" onclick="selUrg(this,'u')"><span>🔴</span><span>Urgente</span></div>
+            <div class="urg-o i" onclick="selUrg(this,'i')"><span>🟠</span><span>Importante</span></div>
+            <div class="urg-o n" onclick="selUrg(this,'n')"><span>🟡</span><span>Normal</span></div>
+            <div class="urg-o l" onclick="selUrg(this,'l')"><span>🟢</span><span>Sin prisa</span></div>
+          </div>
+        </div>
+        <div class="f-g">
+          <label class="f-l">¿Para quién?</label>
+          <div class="whom-r">
+            <div class="whom-o on" onclick="selWhom(this,'me')">Para mí</div>
+            <div class="whom-o" id="wPartner" onclick="selWhom(this,'partner')">Para Ana</div>
+            <div class="whom-o" onclick="selWhom(this,'both')">Las dos</div>
+          </div>
+        </div>
+        <button class="submit" onclick="addMission()">¡Añadir! 🎯</button>
+        <button class="cancel-b" onclick="closeModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASCOTA -->
+  <div class="screen" id="sc-mascota">
+    <div class="page-head">
+      <div class="page-title" id="petPageTitle">Mochi 🐱</div>
+      <div class="page-sub">Vuestra mascota virtual</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="pet-main">
+      <span class="pet-sp">✨</span>
+      <span class="pet-sp">💕</span>
+      <span class="pet-sp">⭐</span>
+      <div class="pet-ava" id="petAva" onclick="petAction('hug')">🐱</div>
+      <div class="pet-n" id="petNameDisp">Mochi</div>
+      <div class="pet-mood" id="petMoodTxt">Contento 😊</div>
+      <div class="pet-bar-o"><div class="pet-bar-i" id="petBar"></div></div>
+      <div class="pet-pct" id="petPct">Felicidad: 72%</div>
+    </div>
+    <div class="pet-bub">
+      <div class="pet-msg-txt" id="petMsgTxt">💕 "¡Hola! ¡Os quiero muchísimo y me alegra que me cuidéis! Sois las mejores~"</div>
+      <div class="pet-msg-time" id="petMsgTime">Justo ahora</div>
+    </div>
+    <div class="sec-lbl">Cuidar a <span id="petActLbl">Mochi</span></div>
+    <div class="pet-acts">
+      <button class="pet-act" onclick="petAction('feed')"><div class="pa-i">🍣</div><div class="pa-l">Dar de comer</div></button>
+      <button class="pet-act" onclick="petAction('cuddle')"><div class="pa-i">🤗</div><div class="pa-l">Acariciar</div></button>
+      <button class="pet-act" onclick="petAction('play')"><div class="pa-i">🎾</div><div class="pa-l">Jugar</div></button>
+    </div>
+    <div class="sec-lbl">Historial</div>
+    <div id="petHist"></div>
+  </div>
+
+  <!-- PLANES -->
+  <div class="screen" id="sc-planes">
+    <div class="page-head">
+      <div class="page-title">Planes 🌟</div>
+      <div class="page-sub">Ideas para disfrutar juntas</div>
+    </div>
+    <div class="pills">
+      <div class="pill on" onclick="selPill(this)">🌟 Todo</div>
+      <div class="pill" onclick="selPill(this)">🎬 Pelis</div>
+      <div class="pill" onclick="selPill(this)">🎮 Juegos</div>
+      <div class="pill" onclick="selPill(this)">🌍 Salidas</div>
+      <div class="pill" onclick="selPill(this)">❤️ Citas</div>
+    </div>
+    <div class="feat">
+      <div class="feat-badge">✨ Esta semana</div>
+      <div class="feat-title" id="featTitle">Noche de película 🍿</div>
+      <div class="feat-desc" id="featDesc">"Everything Everywhere All at Once" — filosofía, amor multidimensional y palomitas.</div>
+      <div class="feat-acts">
+        <button class="feat-btn p" onclick="saveFeat()">💾 Guardar</button>
+        <button class="feat-btn s" onclick="nextFeat()">Otra idea →</button>
+      </div>
+    </div>
+    <div class="sec-lbl">Ideas para vosotras</div>
+    <div class="plan-grid">
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#667eea18,#764ba218)">🎮</div><div class="plan-body"><div class="plan-title">It Takes Two</div><div class="plan-meta">🎮 Coop</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#f093fb18,#f5576c18)">🎬</div><div class="plan-body"><div class="plan-title">La La Land</div><div class="plan-meta">🎬 Romántica</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#4facfe18,#00f2fe18)">🧁</div><div class="plan-body"><div class="plan-title">Noche repostera</div><div class="plan-meta">🍽️ En casa</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#43e97b18,#38f9d718)">🌿</div><div class="plan-body"><div class="plan-title">Senderismo</div><div class="plan-meta">🏃 Exterior</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#fa709a18,#fee14018)">🔍</div><div class="plan-body"><div class="plan-title">Escape Room</div><div class="plan-meta">🧩 Aventura</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+      <div class="plan-card"><div class="plan-img" style="background:linear-gradient(135deg,#a18cd118,#fbc2eb18)">🎲</div><div class="plan-body"><div class="plan-title">Noche de juegos</div><div class="plan-meta">🎲 Catan, Dixit</div><div class="plan-btns"><button class="plan-btn lk" onclick="like(this)">❤️</button><button class="plan-btn sv" onclick="save(this)">💾</button></div></div></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- AJUSTES -->
+  <div class="screen" id="sc-ajustes">
+    <div class="page-head">
+      <div class="page-title">Ajustes ⚙️</div>
+      <div class="page-sub">Personaliza la app</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="info-card">
+      <h4>📲 Instalar en iPhone</h4>
+      <p>Abre esta misma URL en <strong>Safari</strong> → botón compartir <strong>↑</strong> → "Añadir a pantalla de inicio" → Añadir. ¡Repetid en el iPhone de vuestra pareja!</p>
+    </div>
+    <div class="sec-lbl">Vuestros nombres</div>
+    <div class="set-card">
+      <div class="f-g">
+        <label class="f-l">Tu nombre</label>
+        <input class="f-i" id="setMy" placeholder="Ej: Claudia" oninput="saveCfg('myName',this.value)">
+      </div>
+      <div class="f-g" style="margin-bottom:0">
+        <label class="f-l">Nombre de tu pareja</label>
+        <input class="f-i" id="setPart" placeholder="Ej: Ana" oninput="saveCfg('partnerName',this.value)">
+      </div>
+    </div>
+    <div class="sec-lbl">Mascota</div>
+    <div class="set-card">
+      <div class="f-g">
+        <label class="f-l">Nombre de la mascota</label>
+        <input class="f-i" id="setPet" placeholder="Ej: Mochi" oninput="saveCfg('petName',this.value)">
+      </div>
+      <div class="f-g" style="margin-bottom:0">
+        <label class="f-l">Tipo de mascota</label>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <button class="pet-type-btn" onclick="setPetType(this,'🐱')" style="font-size:26px;background:white;border:2px solid #E8A4C9;border-radius:11px;padding:7px 10px;cursor:pointer">🐱</button>
+          <button class="pet-type-btn" onclick="setPetType(this,'🐶')" style="font-size:26px;background:white;border:2px solid #e8d5f0;border-radius:11px;padding:7px 10px;cursor:pointer">🐶</button>
+          <button class="pet-type-btn" onclick="setPetType(this,'🐰')" style="font-size:26px;background:white;border:2px solid #e8d5f0;border-radius:11px;padding:7px 10px;cursor:pointer">🐰</button>
+          <button class="pet-type-btn" onclick="setPetType(this,'🦊')" style="font-size:26px;background:white;border:2px solid #e8d5f0;border-radius:11px;padding:7px 10px;cursor:pointer">🦊</button>
+          <button class="pet-type-btn" onclick="setPetType(this,'🐼')" style="font-size:26px;background:white;border:2px solid #e8d5f0;border-radius:11px;padding:7px 10px;cursor:pointer">🐼</button>
+          <button class="pet-type-btn" onclick="setPetType(this,'🦄')" style="font-size:26px;background:white;border:2px solid #e8d5f0;border-radius:11px;padding:7px 10px;cursor:pointer">🦄</button>
+        </div>
+      </div>
+    </div>
+    <div style="height:10px"></div>
+  </div>
+
+</div><!-- /app-body -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Tab Bar -->
+<div class="tabs">
+  <div class="tab on" onclick="goTab('home')"><div class="tab-ico">🏠</div><div class="tab-lbl">Inicio</div></div>
+  <div class="tab" onclick="goTab('calendario')"><div class="tab-ico">📅</div><div class="tab-lbl">Calendario</div></div>
+  <div class="tab" onclick="goTab('misiones')">
+    <div class="tab-ico">🎯</div><div class="tab-lbl">Misiones</div>
+    <div class="tab-badge" id="urgBadge"></div>
+  </div>
+  <div class="tab" onclick="goTab('mascota')"><div class="tab-ico" id="petTabIco">🐱</div><div class="tab-lbl" id="petTabLbl">Mochi</div></div>
+  <div class="tab" onclick="goTab('planes')"><div class="tab-ico">🌟</div><div class="tab-lbl">Planes</div></div>
+  <div class="tab" onclick="goTab('ajustes')"><div class="tab-ico">⚙️</div><div class="tab-lbl">Ajustes</div></div>
+</div>
+
+<script>
+// ===== STATE =====
+var S = {
+  myName: 'Claudia', partnerName: 'Ana',
+  petName: 'Mochi', petType: '🐱',
+  petHappiness: 72, petLastCared: Date.now(),
+  petHistory: [], missions: []
+};
+var filter = 'all', urgSel = 'u', whomSel = 'me';
+var calY = new Date().getFullYear(), calM = new Date().getMonth();
+var featIdx = 0;
+var pushTimer, toastTimer;
+
+// ===== STORAGE =====
+function load() {
+  try {
+    var d = localStorage.getItem('misiones');
+    if (d) S = JSON.parse(d);
+  } catch(e) {}
+}
+function save() {
+  try { localStorage.setItem('misiones', JSON.stringify(S)); } catch(e) {}
+}
+
+// ===== INIT =====
+window.onload = function() {
+  load();
+  setDate();
+  renderAll();
+  setTimeout(function() {
+    var u = S.missions.filter(function(m){return !m.done && m.urgency==='u';}).length;
+    triggerPush('💕','¡Hola!', u > 0 ? 'Tienes '+u+' misión'+(u>1?'es':'')+' urgente'+(u>1?'s':'') : 'No hay misiones urgentes hoy 🎉');
+  }, 2500);
+};
+
+function renderAll() {
+  renderHeader();
+  renderStats();
+  renderHomeList();
+  renderMissions();
+  renderPet();
+  renderPetHist();
+  buildCal();
+  loadSettings();
+  updateLabels();
+}
+
+// ===== DATE =====
+var MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var DAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function setDate() {
+  var n = new Date();
+  var el = document.getElementById('hDate');
+  if (el) el.textContent = DAYS[n.getDay()]+', '+n.getDate()+' de '+MONTHS[n.getMonth()].toLowerCase();
+}
+
+// ===== TABS =====
+var TABS = ['home','calendario','misiones','mascota','planes','ajustes'];
+function goTab(name) {
+  TABS.forEach(function(id) {
+    var s = document.getElementById('sc-'+id);
+    if (s) s.classList.remove('active');
+  });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
+  var sc = document.getElementById('sc-'+name);
+  if (sc) { sc.classList.add('active'); sc.scrollTop = 0; }
+  var idx = TABS.indexOf(name);
+  var tabs = document.querySelectorAll('.tab');
+  if (tabs[idx]) tabs[idx].classList.add('on');
+}
+
+function selPill(el) {
+  var row = el.closest('.pills') || el.parentNode;
+  row.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('on'); });
+  el.classList.add('on');
+}
+
+// ===== PUSH =====
+function triggerPush(ico, title, body) {
+  document.getElementById('push-ico').textContent = ico;
+  document.getElementById('push-title').textContent = title;
+  document.getElementById('push-body').textContent = body;
+  var el = document.getElementById('push');
+  el.classList.add('show');
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(function(){ el.classList.remove('show'); }, 4500);
+}
+function closePush() {
+  document.getElementById('push').classList.remove('show');
+  clearTimeout(pushTimer);
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ===== HEADER =====
+function renderHeader() {
+  var el = document.getElementById('hTitle');
+  if (el) el.textContent = 'Hola, '+(S.myName||'Claudia')+' 👋';
+}
+
+// ===== STATS =====
+function renderStats() {
+  var urg = S.missions.filter(function(m){ return !m.done && m.urgency==='u'; }).length;
+  var tot = S.missions.filter(function(m){ return !m.done; }).length;
+  var done = S.missions.filter(function(m){ return m.done; }).length;
+  setText('sUrg', urg);
+  setText('sTot', tot);
+  setText('sDone', done);
+  setText('msSub', tot+' pendientes · '+done+' hechas');
+  var badge = document.getElementById('urgBadge');
+  if (badge) { badge.textContent = urg||''; badge.classList.toggle('show', urg>0); }
+  var bd = document.getElementById('bellDot');
+  if (bd) bd.style.display = urg>0 ? 'block':'none';
+  var st = document.getElementById('streakTxt');
+  if (st) st.textContent = done>=3 ? '¡'+Math.min(30,done*2+3)+' días seguidas! 🔥':'¡Completad misiones!';
+}
+
+function setText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function bellTap() {
+  var u = S.missions.filter(function(m){ return !m.done && m.urgency==='u'; }).length;
+  triggerPush(u>0?'🔥':'✅', u>0?'Misiones urgentes':'¡Todo bien!', u>0?'Tienes '+u+' misión'+(u>1?'es':'') +' urgente'+(u>1?'s':''):'Sin misiones urgentes pendientes 🎉');
+  var bd = document.getElementById('bellDot');
+  if (bd) bd.style.display='none';
+}
+
+// ===== MISSIONS =====
+var URG_ICO = {u:'🔴',i:'🟠',n:'🟡',l:'🟢'};
+var URG_LBL = {u:'Urgente',i:'Importante',n:'Normal',l:'Sin prisa'};
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s||'';
+  return d.innerHTML;
+}
+
+function mCard(m) {
+  var dateStr = '';
+  if (m.date) {
+    try { dateStr = new Date(m.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}); } catch(e) {}
+  }
+  var badge = m.forWhom==='both' ? '<span class="mc-badge sh">Compartida</span>'
+    : m.forWhom==='partner' ? '<span class="mc-badge">Para '+esc(S.partnerName||'Ana')+'</span>' : '';
+  return '<div class="mc '+m.urgency+(m.done?' done':'')+'">'+
+    '<div class="mc-dot">'+URG_ICO[m.urgency]+'</div>'+
+    '<div class="mc-info">'+
+      '<div class="mc-title'+(m.done?' done':'')+'">'+esc(m.title)+'</div>'+
+      '<div class="mc-meta">'+
+        (dateStr?'<span>📅 '+dateStr+'</span>':'<span>'+URG_LBL[m.urgency]+'</span>')+
+        badge+
+      '</div>'+
+    '</div>'+
+    '<div class="mc-ck'+(m.done?' on':'')+'" onclick="toggleM(\''+m.id+'\')">'+( m.done?'✓':'')+'</div>'+
+    '<button class="mc-del" onclick="delM(\''+m.id+'\')">×</button>'+
+  '</div>';
+}
+
+function renderHomeList() {
+  var container = document.getElementById('homeList');
+  if (!container) return;
+  var today = S.missions.filter(function(m){
+    if (m.done) return false;
+    return m.urgency==='u' || m.urgency==='i';
+  }).slice(0,4);
+  if (today.length===0) {
+    container.innerHTML = '<div class="empty"><div class="empty-i">🎉</div><h3>¡Todo al día!</h3><p>No hay misiones urgentes hoy.</p></div>';
+  } else {
+    container.innerHTML = today.map(mCard).join('');
+  }
+}
+
+function renderMissions() {
+  var container = document.getElementById('mList');
+  if (!container) return;
+  var list = S.missions.filter(function(m){
+    if (filter==='all') return true;
+    return m.urgency===filter;
+  });
+  if (list.length===0) {
+    container.innerHTML = '<div class="empty"><div class="empty-i">✨</div><h3>Sin misiones</h3><p>Pulsa + para añadir vuestra primera misión.</p></div>';
+    return;
+  }
+  var groups = {u:[],i:[],n:[],l:[]};
+  var done = [];
+  list.forEach(function(m){ if(m.done) done.push(m); else if(groups[m.urgency]) groups[m.urgency].push(m); });
+  var labels = {u:'🔴 Urgentes',i:'🟠 Importantes',n:'🟡 Normales',l:'🟢 Sin prisa'};
+  var html = '';
+  ['u','i','n','l'].forEach(function(k){
+    if (groups[k].length) {
+      html += '<div class="sec-lbl">'+labels[k]+'</div>';
+      groups[k].forEach(function(m){ html += mCard(m); });
+    }
+  });
+  if (done.length) {
+    html += '<div class="sec-lbl" style="color:#b0d0b0">✅ Completadas</div>';
+    done.forEach(function(m){ html += mCard(m); });
+  }
+  container.innerHTML = html;
+}
+
+function toggleM(id) {
+  var m = S.missions.find(function(x){ return x.id===id; });
+  if (!m) return;
+  m.done = !m.done;
+  save();
+  renderStats();
+  renderHomeList();
+  renderMissions();
+  if (m.done) toast('¡Misión completada! ✅');
+}
+
+function delM(id) {
+  S.missions = S.missions.filter(function(x){ return x.id!==id; });
+  save();
+  renderStats();
+  renderHomeList();
+  renderMissions();
+  toast('Misión eliminada');
+}
+
+function setFilter(f, el) {
+  filter = f;
+  document.getElementById('filterPills').querySelectorAll('.pill').forEach(function(p){ p.classList.remove('on'); });
+  el.classList.add('on');
+  renderMissions();
+}
+
+// ===== MODAL =====
+function openModal() { document.getElementById('mModal').classList.add('open'); }
+function closeModal() { document.getElementById('mModal').classList.remove('open'); }
+function selUrg(el, u) {
+  document.querySelectorAll('.urg-o').forEach(function(o){ o.classList.remove('on'); });
+  el.classList.add('on'); urgSel = u;
+}
+function selWhom(el, w) {
+  document.querySelectorAll('.whom-o').forEach(function(o){ o.classList.remove('on'); });
+  el.classList.add('on'); whomSel = w;
+}
+function addMission() {
+  var title = document.getElementById('mTitle').value.trim();
+  if (!title) {
+    document.getElementById('mTitle').classList.add('err');
+    setTimeout(function(){ document.getElementById('mTitle').classList.remove('err'); }, 1800);
+    return;
+  }
+  var m = { id: Date.now()+'', title:title, desc:document.getElementById('mDesc').value.trim(),
+    date:document.getElementById('mDate').value, urgency:urgSel, forWhom:whomSel, done:false, createdAt:Date.now() };
+  S.missions.unshift(m);
+  save();
+  closeModal();
+  document.getElementById('mTitle').value='';
+  document.getElementById('mDesc').value='';
+  document.getElementById('mDate').value='';
+  renderStats(); renderHomeList(); renderMissions();
+  if (m.forWhom==='partner'||m.forWhom==='both') {
+    setTimeout(function(){ triggerPush('🎯','¡Misión enviada!',m.title+' → '+(S.partnerName||'Ana')+' notificada 💕'); }, 500);
+  } else { toast('¡Misión añadida! 🎯'); }
+}
+
+// ===== CALENDAR =====
+function buildCal() {
+  var grid = document.getElementById('calGrid');
+  var lbl = document.getElementById('calLabel');
+  if (!grid) return;
+  grid.innerHTML = '';
+  lbl.textContent = MONTHS[calM]+' '+calY;
+  var first = new Date(calY,calM,1);
+  var last = new Date(calY,calM+1,0);
+  var today = new Date();
+  var sd = first.getDay(); sd = sd===0?6:sd-1;
+  var evDays = {};
+  S.missions.forEach(function(m){
+    if (!m.date) return;
+    var d = new Date(m.date);
+    if (d.getFullYear()===calY && d.getMonth()===calM) evDays[d.getDate()] = true;
+  });
+  var prevLast = new Date(calY,calM,0).getDate();
+  for (var i=0;i<sd;i++) { var d=document.createElement('div'); d.className='cal-d other'; d.textContent=prevLast-sd+1+i; grid.appendChild(d); }
+  for (var i=1;i<=last.getDate();i++) {
+    var d=document.createElement('div');
+    var isTod = i===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();
+    d.className='cal-d'+(isTod?' today':'')+(evDays[i]?' ev':'');
+    d.textContent=i;
+    (function(day,el){ el.onclick=function(){ selectDay(day,el); }; })(i,d);
+    grid.appendChild(d);
+  }
+  var rem=(sd+last.getDate())%7; if(rem>0) rem=7-rem;
+  for (var i=1;i<=rem;i++) { var d=document.createElement('div'); d.className='cal-d other'; d.textContent=i; grid.appendChild(d); }
+  renderDayEvs(today.getDate());
+}
+
+function selectDay(day, el) {
+  document.querySelectorAll('.cal-d.sel').forEach(function(c){ c.classList.remove('sel'); });
+  el.classList.add('sel');
+  renderDayEvs(day);
+}
+
+function renderDayEvs(day) {
+  var title = document.getElementById('dayTitle');
+  var list = document.getElementById('dayList');
+  if (!title||!list) return;
+  title.textContent = 'Eventos del '+day+' de '+MONTHS[calM].toLowerCase();
+  var evs = S.missions.filter(function(m){
+    if (!m.date) return false;
+    var d = new Date(m.date);
+    return d.getDate()===day && d.getMonth()===calM && d.getFullYear()===calY;
+  });
+  var colors = {u:'#FF6B6B',i:'#FFA94D',n:'#FFCC44',l:'#51CF66'};
+  if (evs.length===0) { list.innerHTML='<div style="color:#b08ab8;font-size:13px;padding:8px 0">Sin misiones para este día</div>'; return; }
+  list.innerHTML = evs.map(function(m){
+    var t=''; try{t=new Date(m.date).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});}catch(e){}
+    return '<div class="day-ev"><div class="ev-t">'+t+'</div><div class="ev-dot" style="background:'+colors[m.urgency]+'"></div><div class="ev-txt">'+esc(m.title)+'</div><div class="ev-who">'+(m.forWhom==='both'?'💕 Juntas':'📱 Mía')+'</div></div>';
+  }).join('');
+}
+
+function chMonth(d) { calM+=d; if(calM>11){calM=0;calY++;} if(calM<0){calM=11;calY--;} buildCal(); }
+
+// ===== PET =====
+var PET_MSGS = {
+  feed:['😸 "¡Ñam ñam! Delicioso, sois las mejores!"','🍣 "¡Mi plato favorito! ¡Ronroneo garantizado!"','😻 "¡Gracias! ¡Os quiero con todo mi corazón!"'],
+  cuddle:['😻 "Purr purr purr... ¡No paréis nunca!"','💕 "¡Sois mi todo~ purr~"','🥰 "¡Me derrito de amor con vosotras!"'],
+  play:['🎾 "¡Weee! ¡Sois mis compañeras favoritas!"','😹 "¡Siempre ganáis! Pero me encanta~"','🐱 "¡Más! ¡Más! ¡Siempre más! 🎾"'],
+  hug:['💝 "¡ABRAZO! ¡No me soltéis~!"','😺 "Ronroneo máximo. ¡Sois mi familia favorita!"']
+};
+var MOODS = [
+  [0,30,'Tristón 😿'],[30,55,'Un poco solo... 🥺'],
+  [55,75,'Contento 😊'],[75,90,'Muy feliz 😸'],[90,101,'¡Felicísimo! 🥳']
+];
+
+function renderPet() {
+  var h = S.petHappiness||72;
+  var pb = document.getElementById('petBar'); if(pb) pb.style.width=h+'%';
+  var pf = document.getElementById('ppFill'); if(pf) pf.style.width=h+'%';
+  var pp = document.getElementById('petPct'); if(pp) pp.textContent='Felicidad: '+h+'%';
+  var mood = MOODS.find(function(m){ return h>=m[0]&&h<m[1]; })||MOODS[2];
+  var pmt = document.getElementById('petMoodTxt'); if(pmt) pmt.textContent=mood[2];
+  var pn = S.petName||'Mochi', pt = S.petType||'🐱';
+  setText('petNameDisp', pn); setText('petActLbl', pn); setText('petTabLbl', pn);
+  setText('petInStreak', pn); setText('petPageTitle', pn+' '+pt);
+  var pa = document.getElementById('petAva'); if(pa) pa.textContent=pt;
+  var pti = document.getElementById('petTabIco'); if(pti) pti.textContent=pt;
+  var pav = document.getElementById('ppAva'); if(pav) pav.textContent=pt;
+  var ppn = document.getElementById('ppName'); if(ppn) ppn.textContent=pn+(h<40?' está triste 😿':' está feliz 😊');
+  var ppm = document.getElementById('ppMsg'); if(ppm) ppm.textContent=h<40?'"Lleváis tiempo sin cuidarme... 😿"':'"¡Os quiero! ¡Cuidadme siempre!"';
+}
+
+function petAction(type) {
+  var msgs = PET_MSGS[type]||PET_MSGS.hug;
+  var msg = msgs[Math.floor(Math.random()*msgs.length)];
+  var el = document.getElementById('petMsgTxt');
+  if (el) { el.style.opacity='0'; setTimeout(function(){ el.textContent=msg; el.style.opacity='1'; el.style.transition='opacity 0.4s'; },200); }
+  setText('petMsgTime','Justo ahora');
+  S.petHappiness = Math.min(100, (S.petHappiness||72) + Math.floor(Math.random()*7)+5);
+  S.petLastCared = Date.now();
+  var actTxt={feed:'dio de comer',cuddle:'acarició',play:'jugó con',hug:'abrazó a'};
+  S.petHistory.unshift({who:'Tú',action:actTxt[type]+' '+(S.petName||'Mochi'),time:'Justo ahora'});
+  if(S.petHistory.length>8) S.petHistory.pop();
+  save();
+  renderPet();
+  renderPetHist();
+  var ava=document.getElementById('petAva');
+  if(ava){ava.style.transform='scale(1.3) rotate(12deg)';setTimeout(function(){ava.style.transform='';},350);}
+  var toasts={feed:'¡Comió! 🍣',cuddle:'¡Acariciado! 🤗',play:'¡Jugó! 🎾',hug:'¡Abrazo! 💕'};
+  toast(toasts[type]||'¡Bien!');
+}
+
+function renderPetHist() {
+  var c = document.getElementById('petHist');
+  if (!c) return;
+  if (!S.petHistory||!S.petHistory.length) {
+    c.innerHTML='<div style="text-align:center;padding:16px;color:#b08ab8;font-size:13px">¡Cuidad a '+(S.petName||'Mochi')+' para ver el historial!</div>';
+    return;
+  }
+  c.innerHTML = S.petHistory.slice(0,6).map(function(h){
+    return '<div class="pet-h"><div class="ph-w">'+(h.who==='Ana'?'🧑‍💼':'👩')+'</div><div><div class="ph-n">'+esc(h.who)+'</div><div class="ph-a">'+esc(h.action)+'</div><div class="ph-t">'+esc(h.time)+'</div></div></div>';
+  }).join('');
+}
+
+// ===== PLANS =====
+var FEATS = [
+  {t:'Noche de película 🍿',d:'"Everything Everywhere All at Once" — filosofía y amor multidimensional. ¡Con palomitas!'},
+  {t:'Picnic en el parque 🧺',d:'Mantita, fruta y algo rico al aire libre. ¡Sacad las bicis!'},
+  {t:'Maratón Ghibli 🎌',d:'"El viaje de Chihiro" → "La princesa Mononoke". Una noche mágica~'},
+  {t:'Cocinar algo nuevo 🍜',d:'Elegid una receta que ninguna haya hecho. ¡El proceso es la diversión!'},
+  {t:'Karaoke en casa 🎤',d:'Spotify Karaoke, luces apagadas y cantad sin vergüenza 🎶'},
+];
+function nextFeat() {
+  featIdx=(featIdx+1)%FEATS.length;
+  setText('featTitle',FEATS[featIdx].t); setText('featDesc',FEATS[featIdx].d);
+}
+function saveFeat() { toast('¡Plan guardado! 💾'); }
+function like(btn) { btn.classList.add('on'); btn.textContent='❤️'; toast('¡Favorito! ❤️'); }
+function save(btn) { btn.classList.add('on'); btn.textContent='✓'; toast('¡Guardado! 💾'); }
+
+// ===== SETTINGS =====
+function loadSettings() {
+  var a=document.getElementById('setMy'); if(a) a.value=S.myName||'';
+  var b=document.getElementById('setPart'); if(b) b.value=S.partnerName||'';
+  var c=document.getElementById('setPet'); if(c) c.value=S.petName||'';
+  document.querySelectorAll('.pet-type-btn').forEach(function(b){
+    b.style.borderColor = b.textContent===S.petType?'#E8A4C9':'#e8d5f0';
+  });
+}
+function saveCfg(k,v) {
+  S[k]=v; save(); renderAll();
+}
+function setPetType(el,t) {
+  S.petType=t; save(); renderPet();
+  document.querySelectorAll('.pet-type-btn').forEach(function(b){ b.style.borderColor=b.textContent===t?'#E8A4C9':'#e8d5f0'; });
+  toast('Mascota cambiada: '+t);
+}
+function updateLabels() {
+  var pn = S.partnerName||'Ana';
+  var pc = document.getElementById('partnerCal'); if(pc) pc.textContent=pn;
+  var wp = document.getElementById('wPartner'); if(wp) wp.textContent='Para '+pn;
+}
+
+// ===== PWA =====
+if ('serviceWorker' in navigator) {
+  var swCode = 'self.addEventListener("install",function(e){});self.addEventListener("fetch",function(e){e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));});';
+  var swBlob = new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function(){});
+}
+</script>
+</body>
+</html>
